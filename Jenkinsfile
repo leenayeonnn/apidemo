@@ -31,23 +31,22 @@ pipeline {
         }
         stage('Prepare Deployment Package') {
                     steps {
-                        echo 'Preparing deployment package...'
-                        sh """
-                        cd deployment
-                        zip -r ${env.DEPLOY_ZIP} appspec.yml scripts/
-                        mv ${env.DEPLOY_ZIP} ../
-                        cd ..
-                        zip -r ${env.DEPLOY_ZIP} -g build/libs/apidemo-0.0.1-SNAPSHOT.jar
+                            echo 'Preparing deployment package...'
+                            sh """
+                            cd deployment
+                            zip -r ${env.DEPLOY_ZIP} appspec.yml scripts/
+                            mv ${env.DEPLOY_ZIP} ../
+                            cd ..
+                            zip -r ${env.DEPLOY_ZIP} -g build/libs/apidemo-0.0.1-SNAPSHOT.jar
                         """
                     }
+        }
+        stage('Upload to S3') {
+            steps {
+                withAWS(credentials: 'lion-admin') {
+                    s3Upload(bucket: env.S3_BUCKET, file: env.DEPLOY_ZIP)
                 }
-                stage('Upload to S3') {
-                    steps {
-                        withAWS(credentials: 'lion-admin') {
-                            s3Upload(bucket: env.S3_BUCKET, file: env.DEPLOY_ZIP)
-                        }
-                    }
-                }
+            }
         }
         stage('Deploy') {
             steps {
