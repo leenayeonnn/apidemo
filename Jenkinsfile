@@ -23,7 +23,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying...'
-                // deploy steps
+                 withAWS(credentials: 'lion-admin') {
+                                    sh 'aws s3 cp build/libs/apidemo-0.0.1-SNAPSHOT.jar s3://skdus-build-file/'
+                                }
             }
         }
     }
